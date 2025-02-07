@@ -2,15 +2,23 @@ using UnityEngine;
 
 public class ProjectManager : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public void OnLoadXmlClick()
     {
-        
+        HierarchyManager.Instance?.OnLoadXml();
     }
 
-    // Update is called once per frame
-    void Update()
+    public void OnOpenObjectClick()
     {
-        
+        HierarchyManager.Instance?.ToggleHierarchyView(false);
+    }
+
+    public void OnSplitObjectClick()
+    {
+        HierarchyManager.Instance?.ToggleHierarchyView(false);
+    }
+
+    public void OnExportObjectClick()
+    {
+        HierarchyManager.Instance?.ToggleHierarchyView(false);
     }
 }
