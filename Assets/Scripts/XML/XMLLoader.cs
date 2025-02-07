@@ -5,26 +5,49 @@ using TMPro;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.IO;
+using SFB;
+using System;
 
 public class XMLLoader : MonoBehaviour
 {
-    public string xmlFileName = "SP3DTrain_A2.xml";
+    public FolderTree LoadedFolder { get; private set; }
 
-    public bool LoadXML(out FolderTree folderTree)
+    private string xmlFileName = "SP3DTrain_A2.xml";
+    private string selectedFilePath;
+
+    public void OpenFilePicker(Action<FolderTree> xmlFilePicked = null)
     {
-        string path = Path.Combine(Application.streamingAssetsPath, xmlFileName);
-
-        if (!File.Exists(path))
+        // Open file picker dialog (Windows, Mac, Linux)
+#if UNITY_STANDALONE || UNITY_EDITOR
+        var paths = StandaloneFileBrowser.OpenFilePanel("Select XML File", Application.dataPath, "xml", false);
+        if (paths.Length > 0 && !string.IsNullOrEmpty(paths[0]))
         {
-            Debug.LogError($"XML file not found: {path}");
-            folderTree = null;
-            return false;
+            selectedFilePath = paths[0];
+            LoadXML(selectedFilePath, onComplete: xmlFilePicked);
+        }
+#else
+        LoadXML(Path.Combine(Application.streamingAssetsPath, xmlFileName), onComplete: xmlFilePicked);
+#endif
+    }
+
+    private void LoadXML(string filePath, Action<FolderTree> onComplete = null)
+    {
+        if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+        {
+            Debug.LogError("XML file not found! Path: " + filePath);
+            return;
         }
 
-        XDocument xmlDoc = XDocument.Load(path);
-
-        folderTree = ConverterToFolderTree(xmlDoc.Root, 0);
-        return true;
+        try
+        {
+            XDocument xmlDoc = XDocument.Load(filePath);
+            LoadedFolder = ConverterToFolderTree(xmlDoc.Root, 0);
+            onComplete?.Invoke(LoadedFolder);
+        }
+        catch
+        {
+            Debug.LogError("Invalid XML format!");
+        }
     }
 
     FolderTree ConverterToFolderTree(XElement element, int indentLevel)

@@ -16,9 +16,9 @@ public class HierarchyManager : MonoSingleton<HierarchyManager>
 
     public void OnLoadXml()
     {
-        if (xmlLoader.LoadXML(out var folderTree))
+        if (xmlLoader)
         {
-            CreateHierarchy(folderTree);
+            xmlLoader.OpenFilePicker(CreateHierarchy);
         }
     }
 
