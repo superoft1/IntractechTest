@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 9148050115007478510}
   - component: {fileID: 484687921842268394}
   - component: {fileID: 956444805086632119}
+  - component: {fileID: 5742440714964984414}
   m_Layer: 5
   m_Name: HierarchyButton
   m_TagString: Untagged
@@ -190,7 +191,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   label: {fileID: 5168622211337929268}
   childrenContainer: {fileID: 1929600343911085951}
-  hierarchyButtonPrefab: {fileID: 5118993106593410007}
+--- !u!114 &5742440714964984414
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5118993106593410007}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f40a1ce77cf06142b530b1651e2468d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  reEnableClick: 1
+  timeToEnableClick: 0.5
 --- !u!1 &6894147174859935411
 GameObject:
   m_ObjectHideFlags: 0
@@ -290,7 +304,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 2
+  m_HorizontalAlignment: 1
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
