@@ -2,34 +2,52 @@ using System.Xml.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.IO;
 
 public class XMLLoader : MonoBehaviour
 {
-    public Button loadXmlButton;
-    public Transform contentPanel;
-    public GameObject textPrefab;  // UI prefab for displaying hierarchy
+    public string xmlFileName = "SP3DTrain_A2.xml";
 
-    private void Start()
+    public bool LoadXML(out FolderTree folderTree)
     {
-        loadXmlButton.onClick.AddListener(LoadXML);
-    }
+        string path = Path.Combine(Application.streamingAssetsPath, xmlFileName);
 
-    void LoadXML()
-    {
-        string path = UnityEngine.Application.streamingAssetsPath + "/SP3DTrain_A2.xml";
+        if (!File.Exists(path))
+        {
+            Debug.LogError($"XML file not found: {path}");
+            folderTree = null;
+            return false;
+        }
+
         XDocument xmlDoc = XDocument.Load(path);
 
-        TransformHierarchy(xmlDoc.Root, contentPanel, 0);
+        folderTree = ConverterToFolderTree(xmlDoc.Root, 0);
+        return true;
     }
 
-    void TransformHierarchy(XElement element, Transform parent, int indentLevel)
+    FolderTree ConverterToFolderTree(XElement element, int indentLevel)
     {
-        GameObject newText = Instantiate(textPrefab, parent);
-        newText.GetComponent<TextMeshProUGUI>().text = new string(' ', indentLevel * 4) + element.Attribute("text")?.Value;
-
+        FolderTree result = new FolderTree();
+        
+        // Convert folder name
+        result.folderName = new string(' ', indentLevel * 4) + element.Attribute("text")?.Value;
+        
+        // Conver folder children
+        List<FolderTree> children = new List<FolderTree>();
         foreach (XElement child in element.Elements())
         {
-            TransformHierarchy(child, parent, indentLevel + 1);
+            children.Add(ConverterToFolderTree(child, indentLevel + 1));
         }
+        result.children = children;
+
+        return result;
     }
+}
+
+public class FolderTree
+{
+    public string folderName;
+    public List<FolderTree> children;
 }
