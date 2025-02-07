@@ -4,13 +4,16 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Pooling;
+using System.Collections;
 
+[RequireComponent(typeof(Button))]
 public class HierarchyButton : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI label;
+    [SerializeField] private Button folderButton;
     [SerializeField] private Transform childrenContainer;
     // [SerializeField] private GameObject hierarchyButtonPrefab;
-
+    
     private HierarchyButton parentHierarchy = null;
     private List<HierarchyButton> hierarchyChildren = new List<HierarchyButton>();
     private RectTransform rect = null;
@@ -19,6 +22,10 @@ public class HierarchyButton : MonoBehaviour
 
     private void Awake() {
         rect = this.transform as RectTransform;
+        if (!folderButton)
+        {
+            folderButton = this.GetComponent<Button>();
+        }
     }
 
     private void OnEnable() {
@@ -41,10 +48,11 @@ public class HierarchyButton : MonoBehaviour
 
     public void Despawn()
     {
+        // Debug.Log("Despawn " + currentFolder.folderName);
+        RemoveChildren();
         this.parentHierarchy = null;
         this.currentFolder = null;
         SetLabel("");
-        RemoveChildren();
         this.gameObject.Despawn();
     }
     
@@ -56,11 +64,10 @@ public class HierarchyButton : MonoBehaviour
 
     private void CreateChildren()
     {
-        isOpenChildren = true;
         RemoveChildren();
         if (currentFolder != null && currentFolder.children != null)
         {
-            Debug.Log($"Create [{currentFolder.children.Count}] children of {this.currentFolder.folderName}");
+            // Debug.Log($"Create [{currentFolder.children.Count}] children of {this.currentFolder.folderName}");
             foreach (var child in currentFolder.children)
             {
                 var newChildButton = SpawnChild(child);
@@ -70,6 +77,8 @@ public class HierarchyButton : MonoBehaviour
                 }
             }
         }
+        ForceUpdateLayout();
+        isOpenChildren = true;
     }
 
     private HierarchyButton SpawnChild(FolderTree folder)
@@ -86,16 +95,17 @@ public class HierarchyButton : MonoBehaviour
 
     private void RemoveChildren()
     {
-        isOpenChildren = false;
         if (hierarchyChildren != null && hierarchyChildren.Count > 0)
         {
-            Debug.Log($"Remove {hierarchyChildren.Count} children of {this.currentFolder.folderName}");
+            // Debug.Log($"Remove [{hierarchyChildren.Count}] children of {this.currentFolder.folderName}");
             foreach (var folder in hierarchyChildren)
             {
                 folder.Despawn();
             }
             hierarchyChildren.Clear();
+            ForceUpdateLayout();
         }
+        isOpenChildren = false;
     }
 #endregion
 
@@ -124,6 +134,10 @@ public class HierarchyButton : MonoBehaviour
         {
             parentHierarchy.ForceUpdateLayout();
         }
+        else
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(this.transform.parent as RectTransform);
+        }
     }
 
     public void ForceUpdateLayout()
@@ -136,13 +150,37 @@ public class HierarchyButton : MonoBehaviour
 #region Event
     public void OnButtonClick()
     {
-        if (isOpenChildren)
+        if (folderButton && folderButton.interactable)
         {
-            RemoveChildren();
+            DisableClick();
+            if (isOpenChildren)
+            {
+                RemoveChildren();
+            }
+            else
+            {
+                CreateChildren();
+            }
         }
-        else
+    }
+
+    private void DisableClick()
+    {
+        SetButtonInteractable(false);
+        StartCoroutine(EnableClick_Cor());
+    }
+
+    IEnumerator EnableClick_Cor()
+    {
+        yield return new WaitForSeconds(0.2f);
+        SetButtonInteractable(true);
+    }
+
+    private void SetButtonInteractable(bool interactable)
+    {
+        if (folderButton)
         {
-            CreateChildren();
+            folderButton.interactable = interactable;
         }
     }
 #endregion
