@@ -22,5 +22,6 @@ public class ProjectManager : MonoBehaviour
     public void OnExportObjectClick()
     {
         HierarchyManager.Instance?.ToggleHierarchyView(false);
+        ObjectManager.Instance?.ExportObject();
     }
 }

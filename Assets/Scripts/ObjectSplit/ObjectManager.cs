@@ -5,6 +5,7 @@ public class ObjectManager : MonoSingleton<ObjectManager>
 {
     [SerializeField] private OBJLoader objLoader;
     [SerializeField] private MeshSplitter meshSplitter;
+    [SerializeField] private MeshExporter meshExporter;
 
 #region Load Object
     private GameObject CurrentLoadedObject = null;
@@ -79,6 +80,23 @@ public class ObjectManager : MonoSingleton<ObjectManager>
             }
             CurrentSplittedParts.Clear();
         }
+    }
+#endregion
+
+#region Mesh Exporter
+    public void ExportObject()
+    {
+        if (CurrentSplittedParts == null || CurrentSplittedParts.Count <= 0)
+        {
+            return;
+        }
+
+        if (meshExporter == null)
+        {
+            return;
+        }
+
+        meshExporter.ExportMesh(CurrentSplittedParts);
     }
 #endregion
 }

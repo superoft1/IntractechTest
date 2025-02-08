@@ -1,33 +1,87 @@
 using System.IO;
 using UnityEngine;
+using SFB;
+using System.Collections.Generic;
 
 public class MeshExporter : MonoBehaviour
 {
-    public void ExportMesh(Mesh mesh, string fileName)
+    private readonly string fileExtension = "obj";
+
+    public void ExportMesh(List<GameObject> exportObjList)
     {
-        string path = Application.dataPath + "/ExportedModels/" + fileName + ".obj";
-
-        using (StreamWriter sw = new StreamWriter(path))
+        List<MeshFilter> exportMeshList = new List<MeshFilter>();
+        if (exportObjList != null)
         {
-            sw.WriteLine("o " + fileName);
+            exportObjList.ForEach(obj => {
+                if (obj.TryGetComponent<MeshFilter>(out var meshFilter) && meshFilter.mesh != null)
+                {
+                    exportMeshList.Add(meshFilter);
+                }
+                else
+                {
+                    Debug.LogError("No mesh found in object " + obj.name);
+                }
+            });
+        }
 
+        if (exportMeshList.Count <= 0)
+        {
+            Debug.LogError("No mesh found to export!");
+            return;
+        }
+
+        var folderPath = StandaloneFileBrowser.OpenFolderPanel("Select Save Folder", "", false);
+        if (folderPath.Length == 0 || string.IsNullOrEmpty(folderPath[0]))
+        {
+            Debug.Log("Export cancelled.");
+            return;
+        }
+
+        string saveDirectory = folderPath[0];
+
+        foreach (MeshFilter meshFilter in exportMeshList)
+        {
+            string objectName = meshFilter.gameObject.name.Replace(" ", "_");
+            string filePath = Path.Combine(saveDirectory, objectName + "." + fileExtension);
+
+            SaveMeshAsOBJ(meshFilter.mesh, filePath);
+        }
+
+        Debug.Log($"Exported {exportMeshList.Count} meshes to {saveDirectory}");
+    }
+
+    void SaveMeshAsOBJ(Mesh mesh, string filePath)
+    {
+        using (StreamWriter writer = new StreamWriter(filePath))
+        {
+            writer.WriteLine("# Exported Mesh from Unity");
+
+            // Write vertices
             foreach (Vector3 v in mesh.vertices)
             {
-                sw.WriteLine($"v {v.x} {v.y} {v.z}");
+                writer.WriteLine($"v {v.x} {v.y} {v.z}");
             }
 
+            // Write normals
             foreach (Vector3 n in mesh.normals)
             {
-                sw.WriteLine($"vn {n.x} {n.y} {n.z}");
+                writer.WriteLine($"vn {n.x} {n.y} {n.z}");
             }
 
+            // Write UVs (if available)
+            foreach (Vector2 uv in mesh.uv)
+            {
+                writer.WriteLine($"vt {uv.x} {uv.y}");
+            }
+
+            // Write faces (triangles)
             int[] triangles = mesh.triangles;
             for (int i = 0; i < triangles.Length; i += 3)
             {
-                sw.WriteLine($"f {triangles[i] + 1} {triangles[i + 1] + 1} {triangles[i + 2] + 1}");
+                writer.WriteLine($"f {triangles[i] + 1} {triangles[i + 1] + 1} {triangles[i + 2] + 1}");
             }
         }
 
-        Debug.Log($"Exported {fileName}.obj to {path}");
+        Debug.Log($"Mesh exported successfully to: {filePath}");
     }
 }
