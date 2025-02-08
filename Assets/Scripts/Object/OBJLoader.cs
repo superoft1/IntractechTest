@@ -7,47 +7,60 @@ using System.Collections.Generic;
 public class OBJLoader : MonoBehaviour
 {
     public Material defaultMaterial;
-    private string selectedFilePath;
 
-    public void OpenFilePicker(Action<GameObject> onComplete = null)
+    public void OpenFilePicker(Action<List<GameObject>> onComplete = null)
     {
         // Open file picker dialog for .obj files
-        var paths = StandaloneFileBrowser.OpenFilePanel("Select OBJ File", "", "obj", false);
-        if (paths.Length > 0 && !string.IsNullOrEmpty(paths[0]))
+        var paths = StandaloneFileBrowser.OpenFilePanel("Select OBJ File", "", "obj", true);
+
+        List<GameObject> loadedObjects = new List<GameObject>();
+        if (paths.Length > 0)
         {
-            selectedFilePath = paths[0];
-            LoadOBJFile(onComplete);
+            foreach (string path in paths)
+            {
+                if (!string.IsNullOrEmpty(path))
+                {
+                    var newObj = LoadOBJFile(path);
+                    if (newObj != null)
+                    {
+                        loadedObjects.Add(newObj);
+                    }
+                }
+            }
         }
+        onComplete?.Invoke(loadedObjects);
     }
 
-    void LoadOBJFile(Action<GameObject> onComplete = null)
+    private GameObject LoadOBJFile(string filePath)
     {
-        if (string.IsNullOrEmpty(selectedFilePath) || !File.Exists(selectedFilePath))
+        GameObject resultObject = null;
+        if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
         {
             Debug.LogError("OBJ file not found!");
-            return;
+            return null;
         }
 
-        string fileName = Path.GetFileNameWithoutExtension(selectedFilePath);
+        string fileName = Path.GetFileNameWithoutExtension(filePath);
         GameObject objModel = new GameObject(fileName);
         MeshFilter meshFilter = objModel.AddComponent<MeshFilter>();
         MeshRenderer meshRenderer = objModel.AddComponent<MeshRenderer>();
 
         meshRenderer.material = defaultMaterial != null ? defaultMaterial : new Material(Shader.Find("Standard"));
 
-        Mesh loadedMesh = LoadObjectMesh(selectedFilePath);
+        Mesh loadedMesh = LoadObjectMesh(filePath);
         if (loadedMesh != null)
         {
             
             meshFilter.mesh = loadedMesh;
             objModel.transform.position = Vector3.zero;
             objModel.transform.localScale = Vector3.one;
-            onComplete?.Invoke(objModel);
+            resultObject = objModel;
         }
         else
         {
-            Debug.LogError("Failed to load OBJ file!");
+            Debug.LogError($"Failed to load OBJ file! {filePath}");
         }
+        return resultObject;
     }
 
     Mesh LoadObjectMesh(string filePath)

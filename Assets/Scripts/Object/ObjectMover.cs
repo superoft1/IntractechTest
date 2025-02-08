@@ -9,7 +9,7 @@ public class ObjectMover : MonoBehaviour
     private Vector3 offset;
     private float objectZPosition;
     
-    void Start()
+    private void Start()
     {
         mainCamera = Camera.main;
     }
@@ -30,12 +30,12 @@ public class ObjectMover : MonoBehaviour
         
     }
 
-    void Update()
+    private void Update()
     {
         HandleMouseInput();
     }
 
-    void HandleMouseInput()
+    private void HandleMouseInput()
     {
         if (Input.GetMouseButtonDown(0)) // Left click to select object
         {
@@ -60,7 +60,7 @@ public class ObjectMover : MonoBehaviour
         }
     }
 
-    Vector3 GetMouseWorldPosition()
+    private Vector3 GetMouseWorldPosition()
     {
         Vector3 mousePosition = Input.mousePosition;
         mousePosition.z = objectZPosition;

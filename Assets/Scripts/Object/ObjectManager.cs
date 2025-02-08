@@ -7,9 +7,16 @@ public class ObjectManager : MonoSingleton<ObjectManager>
     [SerializeField] private ObjectMover objMover;
     [SerializeField] private MeshSplitter meshSplitter;
     [SerializeField] private MeshExporter meshExporter;
+    [SerializeField] private LayerMask raycastLayer;
+
+    private Camera mainCamera;
+
+    private void Start() {
+        mainCamera = Camera.main;
+    }
 
 #region Load Object
-    private GameObject CurrentLoadedObject = null;
+    private List<GameObject> CurrentLoadedObjects = new List<GameObject>();
 
     public void LoadObject()
     {
@@ -19,33 +26,43 @@ public class ObjectManager : MonoSingleton<ObjectManager>
         }
     }
 
-    private void OnObjectLoaded(GameObject obj)
+    private void OnObjectLoaded(List<GameObject> listObj)
     {
         // Remove old models
-        RemoveLoadedObject();
+        RemoveLoadedObjects();
         RemoveSplittedParts();
 
         // Show new loaded object
-        obj.transform.SetParent(this.transform);
-        if (objMover)
+        if (listObj != null && listObj.Count > 0)
         {
-            objMover.MakeMoveableObject(obj);
+            listObj.ForEach(obj => {
+                obj.SetActive(true);
+                obj.transform.SetParent(this.transform);
+                if (objMover)
+                {
+                    objMover.MakeMoveableObject(obj);
+                }
+            });
+            CurrentLoadedObjects = listObj;
         }
-        CurrentLoadedObject = obj;
     }
 
-    private void RemoveLoadedObject()
+    private void RemoveLoadedObjects()
     {
-        if (CurrentLoadedObject != null)
+        if (CurrentLoadedObjects != null && CurrentLoadedObjects.Count > 0)
         {
-            Destroy(CurrentLoadedObject);
+            foreach (var obj in CurrentLoadedObjects)
+            {
+                Destroy(obj);
+            }
+            CurrentLoadedObjects.Clear();
         }
     }
 #endregion
 
 #region Split Object
     private List<GameObject> CurrentSplittedParts = new List<GameObject>();
-
+    private GameObject currentSelectedObject = null;
     public void SplitObject()
     {
         if (meshSplitter == null)
@@ -53,19 +70,19 @@ public class ObjectManager : MonoSingleton<ObjectManager>
             return;
         }
 
-        if (CurrentLoadedObject == null)
+        if (currentSelectedObject == null)
         {
             return;
         }
 
-        meshSplitter.SplitMesh(CurrentLoadedObject, onComplete: OnObjectSplitted);
+        meshSplitter.SplitMesh(currentSelectedObject, onComplete: OnObjectSplitted);
     }
 
     private void OnObjectSplitted(List<GameObject> objList)
     {
         // Remove old models
         RemoveSplittedParts();
-        CurrentLoadedObject.gameObject.SetActive(false);
+        currentSelectedObject.gameObject.SetActive(false);
 
         // Show new loaded parts
         CurrentSplittedParts = objList;
@@ -106,6 +123,26 @@ public class ObjectManager : MonoSingleton<ObjectManager>
         }
 
         meshExporter.ExportMesh(CurrentSplittedParts);
+    }
+#endregion
+
+#region Select Object
+    void Update()
+    {
+        HandleMouseInput();
+    }
+
+    void HandleMouseInput()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, raycastLayer)
+                && hit.collider.gameObject.CompareTag(Utilities.MoveableObjectTag))
+            {
+                currentSelectedObject = hit.collider.gameObject;
+            }
+        }
     }
 #endregion
 }
