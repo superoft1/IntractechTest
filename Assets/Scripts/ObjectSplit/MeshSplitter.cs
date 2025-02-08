@@ -1,36 +1,62 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class MeshSplitter : MonoBehaviour
 {
     public enum SplitMode { TopLeft, TopRight, BottomLeft, BottomRight }
-    public SplitMode splitMode;
 
     private Mesh originalMesh;
+    private Material originalMaterial;
     private Vector3 center;
 
-    void Start()
+
+    public void SplitMesh(GameObject splitObject, Action<List<GameObject>> onComplete = null)
     {
-        MeshFilter meshFilter = GetComponent<MeshFilter>();
-        if (meshFilter == null)
+        // Verify game object befoore split
+        if (splitObject == null)
         {
-            Debug.LogError("No MeshFilter found!");
+            Debug.LogError("Object is empty!");
             return;
         }
 
-        originalMesh = meshFilter.mesh;
-        center = GetMeshCenter();
+        if (splitObject.TryGetComponent<MeshFilter>(out MeshFilter meshFilter))
+        {
+            originalMesh = meshFilter.mesh;
+        }
+        else
+        {
+            Debug.LogError("MeshFilter is empty!");
+            return;
+        }
 
-        CreateMeshPart(splitMode);
+        if (splitObject.TryGetComponent<MeshRenderer>(out MeshRenderer meshRenderer))
+        {
+            originalMaterial = meshRenderer.material;
+        }
+        else
+        {
+            Debug.LogError("MeshRenderer is empty!");
+            return;
+        }
+
+        // SPlit mesh
+        center = GetMeshCenter();
+        List<GameObject> result = new List<GameObject>();
+        foreach (SplitMode mode in (SplitMode[]) Enum.GetValues(typeof(SplitMode)))
+        {
+            result.Add(CreateMeshPart(mode));
+        }
+        onComplete?.Invoke(result);
     }
 
-    Vector3 GetMeshCenter()
+    private Vector3 GetMeshCenter()
     {
         Bounds bounds = originalMesh.bounds;
-        return bounds.center; // Get center of the bounding box
+        return bounds.center;
     }
 
-    void CreateMeshPart(SplitMode mode)
+    private GameObject CreateMeshPart(SplitMode mode)
     {
         Vector3[] originalVertices = originalMesh.vertices;
         int[] originalTriangles = originalMesh.triangles;
@@ -39,7 +65,7 @@ public class MeshSplitter : MonoBehaviour
         List<int> newTriangles = new List<int>();
         Dictionary<int, int> vertexRemap = new Dictionary<int, int>();
 
-        // Step 1: Filter vertices based on position
+        // Filter vertices based on position
         for (int i = 0; i < originalVertices.Length; i++)
         {
             Vector3 v = originalVertices[i];
@@ -57,7 +83,7 @@ public class MeshSplitter : MonoBehaviour
             }
         }
 
-        // Step 2: Filter triangles to ensure only valid vertices are referenced
+        // Filter triangles to ensure only valid vertices are referenced
         for (int i = 0; i < originalTriangles.Length; i += 3)
         {
             int v1 = originalTriangles[i];
@@ -72,7 +98,7 @@ public class MeshSplitter : MonoBehaviour
             }
         }
 
-        // Step 3: Create a new GameObject for this mesh part
+        // Create a new mesh part
         Mesh newMesh = new Mesh();
         newMesh.vertices = newVertices.ToArray();
         newMesh.triangles = newTriangles.ToArray();
@@ -80,10 +106,12 @@ public class MeshSplitter : MonoBehaviour
 
         GameObject part = new GameObject($"Teapot_{mode}");
         part.AddComponent<MeshFilter>().mesh = newMesh;
-        part.AddComponent<MeshRenderer>().material = GetComponent<MeshRenderer>().material;
+        part.AddComponent<MeshRenderer>().material = originalMaterial != null ? originalMaterial : new Material(Shader.Find("Standard"));
 
-        // Position it next to the original for visibility
+        // Reposition new mesh part
         Vector3 offset = new Vector3((mode == SplitMode.TopRight || mode == SplitMode.BottomRight) ? 1f : -1f, 0, (mode == SplitMode.TopLeft || mode == SplitMode.TopRight) ? 1f : -1f);
         part.transform.position = transform.position + offset;
+
+        return part;
     }
 }
