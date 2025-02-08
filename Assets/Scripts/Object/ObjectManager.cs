@@ -4,6 +4,7 @@ using UnityEngine;
 public class ObjectManager : MonoSingleton<ObjectManager>
 {
     [SerializeField] private OBJLoader objLoader;
+    [SerializeField] private ObjectMover objMover;
     [SerializeField] private MeshSplitter meshSplitter;
     [SerializeField] private MeshExporter meshExporter;
 
@@ -26,6 +27,10 @@ public class ObjectManager : MonoSingleton<ObjectManager>
 
         // Show new loaded object
         obj.transform.SetParent(this.transform);
+        if (objMover)
+        {
+            objMover.MakeMoveableObject(obj);
+        }
         CurrentLoadedObject = obj;
     }
 
@@ -67,6 +72,10 @@ public class ObjectManager : MonoSingleton<ObjectManager>
         CurrentSplittedParts.ForEach(obj => {
             obj.SetActive(true);
             obj.transform.SetParent(this.transform);
+            if (objMover)
+            {
+                objMover.MakeMoveableObject(obj);
+            }
         });
     }
 

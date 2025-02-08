@@ -29,7 +29,7 @@ public class OBJLoader : MonoBehaviour
         }
 
         string fileName = Path.GetFileNameWithoutExtension(selectedFilePath);
-        GameObject objModel = new GameObject("fileName");
+        GameObject objModel = new GameObject(fileName);
         MeshFilter meshFilter = objModel.AddComponent<MeshFilter>();
         MeshRenderer meshRenderer = objModel.AddComponent<MeshRenderer>();
 
