@@ -34,7 +34,8 @@ public class XMLLoader : MonoBehaviour
     {
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
         {
-            Debug.LogError("XML file not found! Path: " + filePath);
+            NotificationHelper.SHOW_ERROR_NOTI?.Invoke("XML file not found! Path: " + filePath);
+            // Debug.LogError("XML file not found! Path: " + filePath);
             return;
         }
 
@@ -46,7 +47,8 @@ public class XMLLoader : MonoBehaviour
         }
         catch
         {
-            Debug.LogError("Invalid XML format!");
+            NotificationHelper.SHOW_ERROR_NOTI?.Invoke("Invalid XML format!");
+            // Debug.LogError("Invalid XML format!");
         }
     }
 

@@ -43,6 +43,7 @@ public class HierarchyManager : MonoSingleton<HierarchyManager>
                 currentHierarchy = SpawnHierarchyButton();
                 currentHierarchy.SetFolderTree(folderTree);
                 currentHierarchy.OnButtonClick();
+                NotificationHelper.SHOW_SUCCESS_NOTI?.Invoke("Load XML file successfully!");
             }
         }
     }

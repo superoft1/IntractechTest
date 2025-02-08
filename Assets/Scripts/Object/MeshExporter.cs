@@ -19,21 +19,24 @@ public class MeshExporter : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogError("No mesh found in object " + obj.name);
+                    NotificationHelper.SHOW_ERROR_NOTI?.Invoke($"No mesh found in object {obj.name}");
+                    // Debug.LogError("No mesh found in object " + obj.name);
                 }
             });
         }
 
         if (exportMeshList.Count <= 0)
         {
-            Debug.LogError("No mesh found to export!");
+            NotificationHelper.SHOW_ERROR_NOTI?.Invoke($"No mesh found to export!");
+            // Debug.LogError("No mesh found to export!");
             return;
         }
 
         var folderPath = StandaloneFileBrowser.OpenFolderPanel("Select Save Folder", "", false);
         if (folderPath.Length == 0 || string.IsNullOrEmpty(folderPath[0]))
         {
-            Debug.Log("Export cancelled.");
+            // Debug.Log("Export cancelled.");
+            NotificationHelper.SHOW_WARNING_NOTI?.Invoke($"Export cancelled.");
             return;
         }
 
@@ -47,7 +50,8 @@ public class MeshExporter : MonoBehaviour
             SaveMeshAsOBJ(meshFilter.mesh, filePath);
         }
 
-        Debug.Log($"Exported {exportMeshList.Count} meshes to {saveDirectory}");
+        NotificationHelper.SHOW_SUCCESS_NOTI?.Invoke($"Exported {exportMeshList.Count} meshes to {saveDirectory}");
+        // Debug.Log($"Exported {exportMeshList.Count} meshes to {saveDirectory}");
     }
 
     void SaveMeshAsOBJ(Mesh mesh, string filePath)

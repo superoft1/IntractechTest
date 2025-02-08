@@ -8,6 +8,7 @@ public class MeshSplitter : MonoBehaviour
 
     private Mesh originalMesh;
     private Material originalMaterial;
+    private GameObject splitObject;
     private Vector3 center;
 
 
@@ -16,27 +17,34 @@ public class MeshSplitter : MonoBehaviour
         // Verify game object befoore split
         if (splitObject == null)
         {
-            Debug.LogError("Object is empty!");
+            NotificationHelper.SHOW_ERROR_NOTI?.Invoke("Object is empty!");
+            //Debug.LogError("Object is empty!");
             return;
         }
+        else
+        {
+            this.splitObject = splitObject;
+        }
 
-        if (splitObject.TryGetComponent<MeshFilter>(out MeshFilter meshFilter))
+        if (this.splitObject.TryGetComponent<MeshFilter>(out MeshFilter meshFilter))
         {
             originalMesh = meshFilter.mesh;
         }
         else
         {
-            Debug.LogError("MeshFilter is empty!");
+            NotificationHelper.SHOW_ERROR_NOTI?.Invoke("MeshFilter is empty!");
+            //Debug.LogError("MeshFilter is empty!");
             return;
         }
 
-        if (splitObject.TryGetComponent<MeshRenderer>(out MeshRenderer meshRenderer))
+        if (this.splitObject.TryGetComponent<MeshRenderer>(out MeshRenderer meshRenderer))
         {
             originalMaterial = meshRenderer.material;
         }
         else
         {
-            Debug.LogError("MeshRenderer is empty!");
+            NotificationHelper.SHOW_ERROR_NOTI?.Invoke("MeshRenderer is empty!");
+            // Debug.LogError("MeshRenderer is empty!");
             return;
         }
 
@@ -104,7 +112,7 @@ public class MeshSplitter : MonoBehaviour
         newMesh.triangles = newTriangles.ToArray();
         newMesh.RecalculateNormals();
 
-        GameObject part = new GameObject($"Teapot_{mode}");
+        GameObject part = new GameObject($"{this.splitObject.name}_{mode}");
         part.AddComponent<MeshFilter>().mesh = newMesh;
         part.AddComponent<MeshRenderer>().material = originalMaterial != null ? originalMaterial : new Material(Shader.Find("Standard"));
 

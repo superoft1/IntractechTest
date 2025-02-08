@@ -36,7 +36,8 @@ public class OBJLoader : MonoBehaviour
         GameObject resultObject = null;
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
         {
-            Debug.LogError("OBJ file not found!");
+            NotificationHelper.SHOW_ERROR_NOTI?.Invoke("OBJ file not found!");
+            // Debug.LogError("OBJ file not found!");
             return null;
         }
 
@@ -58,7 +59,8 @@ public class OBJLoader : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"Failed to load OBJ file! {filePath}");
+            NotificationHelper.SHOW_ERROR_NOTI?.Invoke($"Failed to load OBJ file! {filePath}");
+            //Debug.LogError($"Failed to load OBJ file! {filePath}");
         }
         return resultObject;
     }
@@ -94,7 +96,8 @@ public class OBJLoader : MonoBehaviour
         }
         catch
         {
-            Debug.LogError("Error reading OBJ file.");
+            // Debug.LogError("Error reading OBJ file.");
+            NotificationHelper.SHOW_ERROR_NOTI?.Invoke("Error reading OBJ file.");
             return null;
         }
     }

@@ -24,6 +24,10 @@ public class ObjectManager : MonoSingleton<ObjectManager>
         {
             objLoader.OpenFilePicker(onComplete: OnObjectLoaded);
         }
+        else
+        {
+            NotificationHelper.SHOW_ERROR_NOTI?.Invoke("OBJLoader not found, please add in Unity!");
+        }
     }
 
     private void OnObjectLoaded(List<GameObject> listObj)
@@ -35,6 +39,7 @@ public class ObjectManager : MonoSingleton<ObjectManager>
         // Show new loaded object
         if (listObj != null && listObj.Count > 0)
         {
+            NotificationHelper.SHOW_SUCCESS_NOTI?.Invoke($"Loaded {listObj.Count} file(s) success!");
             listObj.ForEach(obj => {
                 obj.SetActive(true);
                 obj.transform.SetParent(this.transform);
@@ -67,11 +72,13 @@ public class ObjectManager : MonoSingleton<ObjectManager>
     {
         if (meshSplitter == null)
         {
+            NotificationHelper.SHOW_ERROR_NOTI?.Invoke("MeshSplitter not found, please add in Unity!");
             return;
         }
 
         if (currentSelectedObject == null)
         {
+            NotificationHelper.SHOW_WARNING_NOTI?.Invoke("Please select object to split!");
             return;
         }
 
@@ -85,6 +92,7 @@ public class ObjectManager : MonoSingleton<ObjectManager>
         currentSelectedObject.gameObject.SetActive(false);
 
         // Show new loaded parts
+        NotificationHelper.SHOW_SUCCESS_NOTI?.Invoke($"Split {currentSelectedObject.name} successfully!");
         CurrentSplittedParts = objList;
         CurrentSplittedParts.ForEach(obj => {
             obj.SetActive(true);
@@ -114,11 +122,13 @@ public class ObjectManager : MonoSingleton<ObjectManager>
     {
         if (CurrentSplittedParts == null || CurrentSplittedParts.Count <= 0)
         {
+            NotificationHelper.SHOW_WARNING_NOTI?.Invoke("Please plit object before export!");
             return;
         }
 
         if (meshExporter == null)
         {
+            NotificationHelper.SHOW_ERROR_NOTI?.Invoke("MeshExporter not found, please add in Unity!");
             return;
         }
 
