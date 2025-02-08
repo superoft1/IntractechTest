@@ -79,10 +79,21 @@ public class MeshSplitter : MonoBehaviour
             Vector3 v = originalVertices[i];
 
             bool isValid = false;
-            if (mode == SplitMode.TopLeft && v.x < center.x && v.y > center.y) isValid = true;
-            if (mode == SplitMode.TopRight && v.x > center.x && v.y > center.y) isValid = true;
-            if (mode == SplitMode.BottomLeft && v.x < center.x && v.y < center.y) isValid = true;
-            if (mode == SplitMode.BottomRight && v.x > center.x && v.y < center.y) isValid = true;
+            switch (mode)
+            {
+                case SplitMode.TopLeft:
+                    if (v.x <= center.x && v.y >= center.y) isValid = true;
+                    break;
+                case SplitMode.TopRight:
+                    if (v.x >= center.x && v.y >= center.y) isValid = true;
+                    break;
+                case SplitMode.BottomLeft:
+                    if (v.x <= center.x && v.y <= center.y) isValid = true;
+                    break;
+                case SplitMode.BottomRight:
+                    if (v.x >= center.x && v.y <= center.y) isValid = true;
+                    break;
+            }
 
             if (isValid)
             {
