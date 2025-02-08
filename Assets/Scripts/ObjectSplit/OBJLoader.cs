@@ -28,7 +28,8 @@ public class OBJLoader : MonoBehaviour
             return;
         }
 
-        GameObject objModel = new GameObject("ImportedObj");
+        string fileName = Path.GetFileNameWithoutExtension(selectedFilePath);
+        GameObject objModel = new GameObject("fileName");
         MeshFilter meshFilter = objModel.AddComponent<MeshFilter>();
         MeshRenderer meshRenderer = objModel.AddComponent<MeshRenderer>();
 
@@ -37,6 +38,7 @@ public class OBJLoader : MonoBehaviour
         Mesh loadedMesh = LoadObjectMesh(selectedFilePath);
         if (loadedMesh != null)
         {
+            
             meshFilter.mesh = loadedMesh;
             objModel.transform.position = Vector3.zero;
             objModel.transform.localScale = Vector3.one;
@@ -51,48 +53,21 @@ public class OBJLoader : MonoBehaviour
     Mesh LoadObjectMesh(string filePath)
     {
         List<Vector3> vertices = new List<Vector3>();
-        List<Vector3> normals = new List<Vector3>();
-        List<Vector2> uvs = new List<Vector2>();
         List<int> triangles = new List<int>();
 
         try
         {
             string[] lines = File.ReadAllLines(filePath);
-
             foreach (string line in lines)
             {
                 string[] parts = line.Split(' ');
                 if (parts.Length < 2) continue;
 
                 if (parts[0] == "v") // Vertex
-                {
-                    vertices.Add(new Vector3(
-                        float.Parse(parts[1]),
-                        float.Parse(parts[2]),
-                        float.Parse(parts[3])));
-                }
-                else if (parts[0] == "vn") // Normal
-                {
-                    normals.Add(new Vector3(
-                        float.Parse(parts[1]),
-                        float.Parse(parts[2]),
-                        float.Parse(parts[3])));
-                }
-                else if (parts[0] == "vt") // UV
-                {
-                    uvs.Add(new Vector2(
-                        float.Parse(parts[1]),
-                        float.Parse(parts[2])));
-                }
-                else if (parts[0] == "f") // Face
-                {
+                    vertices.Add(new Vector3(float.Parse(parts[1]), float.Parse(parts[2]), float.Parse(parts[3])));
+                else if (parts[0] == "f") // Face (Triangle)
                     for (int i = 1; i <= 3; i++)
-                    {
-                        string[] vertexData = parts[i].Split('/');
-                        int vertexIndex = int.Parse(vertexData[0]) - 1;
-                        triangles.Add(vertexIndex);
-                    }
-                }
+                        triangles.Add(int.Parse(parts[i].Split('/')[0]) - 1);
             }
 
             Mesh mesh = new Mesh
@@ -100,9 +75,7 @@ public class OBJLoader : MonoBehaviour
                 vertices = vertices.ToArray(),
                 triangles = triangles.ToArray()
             };
-
             mesh.RecalculateNormals();
-            mesh.RecalculateBounds();
 
             return mesh;
         }
